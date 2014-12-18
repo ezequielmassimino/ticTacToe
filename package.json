@@ -1,15 +1,16 @@
 {
   "name": "ticTacToe",
   "version": "1.0.0",
-  "description": "",
+  "description": "Un ejemplo simple de cómo hacer un juego tateti con websockets.",
   "main": "index.js",
   "scripts": {
+    "start":"node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "alejandro.oviedo.g@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.10.6",
+    "serve-static": "^1.7.1",
     "socket.io": "^1.2.1"
   }
 }
