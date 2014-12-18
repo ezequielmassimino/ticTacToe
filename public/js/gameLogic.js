@@ -10,69 +10,80 @@ var playerListElement = $('.list-group');
 var boardButtons = boardElement.find('button');
 var playerID;
 
-socket.on('connect', function(data){
+socket.on('connect', function() {
     playerID = socket.io.engine.id;
-    console.log('Connected to the server. Player ID: ' +socket.io.engine.id);
+    console.log('Connected to the server. Player ID: ' + socket.io.engine.id);
 });
 
-socket.on('playerReady', function(data){
-    // add data.player to the list of players
+socket.on('usersList', function(data) {
+    // for each player in data.players, add the playerHTMLTemplate to playerListElement
 });
 
-socket.on('gameRequest', function(data){
-    // if playing is true, then emit 'playerIsBusy' and return
-
-    // show popup with yes or no options
-    // if yes, emit 'gameRequestAccepted' { player: data.player }, set playing to true and show board
-
-    // if not, emit 'gameRequestDenied' with { player: data.player }
+socket.on('playerReady', function(data) {
+    // add data.player to playerListElement using the template
 });
 
-socket.on('gameRequestAccepted', function(data){
-    // hide waiting
+socket.on('gameRequest', function(data) {
+    // if the variable playing is true, then emit 'playerIsBusy' event and return
 
-    // save data.gameID for later use
+    // show confirmation dialog with yes or no options
+
+    // if the user said yes, emit 'gameRequestAccepted' event { player: data.player }, 
+
+    // if the user said yes, set playing to true and show board
+
+    // if not, emit 'gameRequestDenied' event with { player: data.player }
 });
 
-socket.on('gameRequestDenied', function(){
-    // hide board and show lobby
+socket.on('gameRequestAccepted', function(data) {
+    // hide waiting HTML title
+
+    // set the gameID to data.gameID
 });
 
-socket.on('gameWon', function(data){
-    // if playerID === data.winner I won, show winner popup
-    // otherwise I lost therefore show loser popup
+socket.on('gameRequestDenied', function() {
+    // hide board HTML element
+
+    // show lobby HTML element
 });
 
-socket.on('move', function(data){
+socket.on('gameWon', function(data) {
+    // if playerID === data.winner, show winner popup
+
+    // if playerID !=== data.winner, show loser popup
+
+    // show a button to get back to the lobby (optional)
+});
+
+socket.on('move', function(data) {
     updateBoard(data.game);
 
-    // it's your turn now, choose wisely
     enableBoard();
 });
 
 
 
 /////// UI events /////////
-playerListElement.on('click', 'button', function(){
-    console.log('Requesting to play with \''+ $(this)[0].nextSibling.data + '\'');
+playerListElement.on('click', 'button', function() {
+    console.log('Requesting to play with \'' + $(this)[0].nextSibling.data + '\'');
 
-    // hide lobby and show board
+    // hide lobby HTML element
+
+    // show board HTML element
 
     // emit 'gameRequest' event with { player: $(this)[0].nextSibling.data }
-    
+
 });
 
 
-boardButtons.on('click', function(){
-    // emit 'move' event with { gameID: gameID, board: board }
+boardButtons.on('click', function() {
+    var game = getGame();
+    // emit 'move' event with { gameID: gameID, game: game }
 
-    // not your turn anymore
     disableBoard();
 });
 
-
-
-function updateBoard(game){
+function updateBoard(game) {
     $('#0-0').html(game[0][0] || '-');
     $('#0-1').html(game[0][1] || '-');
     $('#0-2').html(game[0][2] || '-');
@@ -84,10 +95,18 @@ function updateBoard(game){
     $('#2-2').html(game[2][2] || '-');
 }
 
-function enableBoard(){
+function getGame() {
+    return {
+        '0': [$('#0-0'), $('#0-1'), $('#0-2')],
+        '1': [$('#1-0'), $('#1-1'), $('#1-2')],
+        '2': [$('#2-0'), $('#2-1'), $('#2-2')]
+    };
+}
+
+function enableBoard() {
     boardButtons.removeAttr('disabled');
 }
 
-function disableBoard(){
+function disableBoard() {
     boardButtons.attr('disabled', 'disabled');
 }
