@@ -3,13 +3,14 @@ var http = require('http');
 var serveStatic = require('serve-static');
 var serve = serveStatic('public');
 var server = http.createServer(function(req, res) {
-    serve(req, res);
+    serve(req, res, function() {
+        res.end();
+    });
 });
 var io = require('socket.io')(server);
 var PORT = 8080;
 
-var players = {}; // this represents a dictionary, each player id is a key of the object players
-var games = {}; // this represents a dictionary, each game id is a key of the object games
+var players = {}; // esto representa un diccionario, cada player id es una key del objeto players
 
 server.listen(PORT, function() {
     console.log('Server is now listening at port: ' + PORT);
@@ -25,87 +26,99 @@ io.on('connection', function(socket) {
         turn: null
     };
 
-    console.log('New player connected. Player ID:' + socket.id);
+    console.log('Se conectó un jugador nuevo. Player ID:' + socket.id);
 
-    // add the player to the players diccionary
+    // agregar el nuevo player al diccionario players
 
-    // emit 'playerReady' event to the list of players, but not to the current player
+    // emitir el evento 'playersList' al nuevo player con { players: listOfPlayers } dónde
+    // listOfPlayers es un array de ids con todos los ids de los players menos el del nuevo player
+
+    // emitir el evento 'playerConnected' a todos los players, exceptuando al player actual
 
     socket.on('gameRequest', function(data) {
-        // emit 'gameRequest' event to data.player with { player: socket.id }
 
-        // set gameRequested to true
+        // emitir el evento 'gameRequest' a data.player con { player: socket.id }
 
-        console.log('Player ' + socket.id + ' requested a game with ' + data.player);
+        // setear gameRequested a true
+
+        console.log('El jugador ' + socket.id + ' solicitó un juego con ' + data.player);
     });
 
     socket.on('playerIsBusy', function() {
-        // set gameRequested to false
+
+        // setear gameRequested a false
+
     });
 
     socket.on('gameRequestAccepted', function(data) {
-        // generate a gameID and save it for later use
+        // genero un gameID
         gameID = data.player + socket.id;
 
-        // emit 'gameRequestAccepted' to data.player with { game: game, gameID: gameID, playerType: 'O' }
+        // emitir el evento 'gameStarted' a data.player con { game: game, gameID: gameID, playerType: 'O' }
 
-        // emit 'gameStarted' to socket with { game: game, gameID: gameID, playerType: 'X' }
+        // emitir el evento 'gameStarted' a socket con { game: game, gameID: gameID, playerType: 'X' }
 
-        // emit 'gameStarted' event with { players: [socket.id, socket.opponent.id] } 
-        // to all the players but not to socket and socket.opponent (optional)
+        // emitir el evento 'gameStarted' a todos los players exceptuando
+        // a socket y socket.opponet con { players: [socket.id, socket.opponent.id] } (opcional)
 
-        // set the opponent
+        // defino el oponente
         socket.opponent = players[data.player];
 
-        // set the socket opponent's opponent
+        // defino el oponente del oponente
         socket.opponent.opponent = socket;
 
-        // the one who receives the invitation starts
+        // el player que recibió el pedido es el que empieza
         socket.game.turn = socket.id;
         socket.playerType = 'X';
         socket.opponent.playerType = 'O';
 
-        // copy the reference to my opponent's game
+        // copio la referencia al game de mi oponente
         socket.opponent.game = socket.game;
     });
 
     socket.on('gameRequestDenied', function(data) {
-        // emit 'gameRequestDenied' event to data.player with {}
+
+        // emitir el evento 'gameRequestDenied' a data.player
+
     });
 
     socket.on('move', function(data) {
-        //validate it's his turn
+        // valido que sea su turno
         if (socket.game.turn === socket.opponent.id) {
-            // return because it's not your turn
+
+            // no corresponde que juege, retornar
+
         }
 
-        // check if it's not cheating (optional)
+        // chequear que no haga trampa (opcional)
 
         if (isWinner(data.game, socket.playerType)) {
-            // emit 'gameWon' event to socket and to socket.opponent with { game: data.game, winner: socket.id }
+
+            // emitir el evento'gameWon' a socket y a socket.opponent con { game: data.game, winner: socket.id }
 
             console.log('Player ' + socket.id + ' won against ' + socket.opponent.id);
         } else {
-            // emit 'move' event to opponent with { game: data.game }
 
-            //make sure the next turn it's to your opponent
+            // emitir el evento 'move' a socket.opponent con { game: data.game }
+
+            // me aseguro de que el próximo turno sea el de mi oponente
             socket.game.turn = socket.opponent.id;
 
-            // refresh the game saved in the server with the one at data.game
+            // refrescar el game guardado en el server con data.game
         }
     });
-
 
     socket.on('disconnect', function() {
         console.log('Player ' + socket.id + ' disconnected.');
 
-        // emit to the rest of the players that this player disconnected
+        // emitir 'playerDisconnected' al resto de los jugadores con { player: socket.id }
+
     });
 });
 
 function isWinner(game, player) {
     // P P P
-    // - - - 
+    // - - -
     // - - -
     if (game[0][0] === game[0][1] && game[0][1] === game[0][2]) {
         return game[0][0] === player;
@@ -159,6 +172,6 @@ function isWinner(game, player) {
         return game[0][2] === player;
     }
 
-    //no winner
+    // no hubo ganador
     return false;
 }
