@@ -12,75 +12,98 @@ var playerID;
 
 socket.on('connect', function() {
     playerID = socket.io.engine.id;
-    console.log('Connected to the server. Player ID: ' + socket.io.engine.id);
+    console.log('Conectado al servidor. Player ID: ' + socket.io.engine.id);
 });
 
-socket.on('usersList', function(data) {
-    // for each player in data.players, add the playerHTMLTemplate to playerListElement
+socket.on('playersList', function(data) {
+
+    // por cada player en data.players, agregar playerHTMLTemplate modificado con los datos
+    // correspondientes a playerListElement
+
 });
 
-socket.on('playerReady', function(data) {
-    // add data.player to playerListElement using the template
+socket.on('playerConnected', function(data) {
+
+    // agregar data.player a playerListElement usando el template HTML
+
 });
 
 socket.on('gameRequest', function(data) {
-    // if the variable playing is true, then emit 'playerIsBusy' event and return
 
-    // show confirmation dialog with yes or no options
+    // si la variable playing es true, entonces emitir el evento 'playerIsBusy' y retornar
 
-    // if the user said yes, emit 'gameRequestAccepted' event { player: data.player }, 
+    // mostrar diálogo de confirmación para que acepte o cancele
 
-    // if the user said yes, set playing to true and show board
+    // si el usuario aceptó, emitir el evento 'gameRequestAccepted' con { player: data.player }
 
-    // if not, emit 'gameRequestDenied' event with { player: data.player }
+    // si el usuario aceptó, setear playing a true y mostrar el board deshabilitado
+
+    // si el usuario aceptó, también ocultar el lobby
+
+    // si el usuario canceló, emitir el evento 'gameRequestDenied' con { player: data.player }
+
 });
 
-socket.on('gameRequestAccepted', function(data) {
-    // hide waiting HTML title
+socket.on('gameStarted', function(data){
 
-    // set the gameID to data.gameID
+    // ocultar el título HTML que dice "Esperando al jugador..."
+
+    // setear playerType con data.playerType
+
+    // setear gameID con data.gameID
+
 });
 
 socket.on('gameRequestDenied', function() {
-    // hide board HTML element
 
-    // show lobby HTML element
+    // ocultar el elemento HTML del board
+
+    // mostrar el elemento HTML del lobby
+
 });
 
 socket.on('gameWon', function(data) {
-    // if playerID === data.winner, show winner popup
+    console.log('Juego ganado.');
 
-    // if playerID !=== data.winner, show loser popup
+    // si playerID === data.winner, entonces mostrar un mensaje "Ganaste!"
 
-    // show a button to get back to the lobby (optional)
+    // si playerID !== data.winner, mostrar mensaje "Perdiste!"
+
+    // si playerID !== data.winner, actualizar el board con data.game (ver ejemplo línea 75)
+
+    // mostrar un botón que al hacer click oculte el tablero y muestre nuevamente el lobby (opcional)
 });
 
 socket.on('move', function(data) {
+    console.log('Jugada recibida.');
+
     updateBoard(data.game);
 
-    enableBoard();
+    // habilitar el board
 });
 
 
+////////////////////////// eventos UI //////////////////////////
 
-/////// UI events /////////
 playerListElement.on('click', 'button', function() {
-    console.log('Requesting to play with \'' + $(this)[0].nextSibling.data + '\'');
+    console.log('Solicitando jugar con \'' + $(this)[0].nextSibling.data + '\'');
 
-    // hide lobby HTML element
+    // ocultar el elemento HTML del lobby
 
-    // show board HTML element
+    // mostrar el elemento HTML del board
 
-    // emit 'gameRequest' event with { player: $(this)[0].nextSibling.data }
-
+    // emitir el evento 'gameRequest' con { player: $(this)[0].nextSibling.data }
 });
 
 
 boardButtons.on('click', function() {
-    var game = getGame();
-    // emit 'move' event with { gameID: gameID, game: game }
+    console.log('Hiciste una jugada.');
 
-    disableBoard();
+    // setear playerType en el HTML del botón (usando $(this) )
+
+    // emitir el evento 'move' con { gameID: gameID, game: getGame() }
+
+    // deshabilitar el board
 });
 
 function updateBoard(game) {
@@ -97,10 +120,18 @@ function updateBoard(game) {
 
 function getGame() {
     return {
-        '0': [$('#0-0'), $('#0-1'), $('#0-2')],
-        '1': [$('#1-0'), $('#1-1'), $('#1-2')],
-        '2': [$('#2-0'), $('#2-1'), $('#2-2')]
+        '0': [$('#0-0').html(), $('#0-1').html, $('#0-2').html],
+        '1': [$('#1-0').html, $('#1-1').html, $('#1-2').html],
+        '2': [$('#2-0').html, $('#2-1').html, $('#2-2').html]
     };
+}
+
+function show(jQueryElement){
+    jQueryElement.removeClass('hide');
+}
+
+function hide(jQueryElement){
+    jQueryElement.addClass('hide');
 }
 
 function enableBoard() {
