@@ -24,8 +24,11 @@ Vas a encontrar que ya existen funciones definidas por ejemplo **isWinner** en e
 Importante: sólo se debe enviar el ID del jugador/jugadores en los emit que realices.
 
 
-## Recursos útiles
+# Recursos útiles
 - [EventEmitters](http://nodejs.org/api/events.html)
 - [jQuery html](http://api.jquery.com/html/)
 - [Object.keys](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Object/keys)
 - [Array.prototype.forEach](https://developer.mozilla.org/es/docs/Web/JavaScript/Referencia/Objetos_globales/Array/forEach)
+
+# Preguntas? Problemas? Comentarios?
+Podés abrir un [issue](https://github.com/CoderHouse/ticTacToe/issues), son gratis!
